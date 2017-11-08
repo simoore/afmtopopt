@@ -15,8 +15,19 @@ class OneElementCantilever(cantilevers.Cantilever):
         topology = np.ones((1, 1))
         xtip = 5
         ytip = 8
-        self.densities = topology
-        super().__init__(topology, a, b, xtip, ytip)
+        super().__init__(topology, a, b, xtip, ytip, topology)
+        
+        
+class SixElementCantilever(cantilevers.Cantilever):
+    
+    def __init__(self):
+        
+        a = 4e-6
+        b = 10e-6
+        topology = np.ones((2, 3))
+        xtip = 8
+        ytip = 55
+        super().__init__(topology, a, b, xtip, ytip, topology)
 
 
 material = materials.PiezoMumpsMaterial()
@@ -32,13 +43,15 @@ fem = finite_element.LaminateFEM(cantilever, material)
 # The single element is longer, rather than short to avoid the torsional mode
 # coming in as the first mode.
 
-ps = np.arange(0.01, 1, 0.001)
+ps = np.arange(0.02, 1, 0.01)
 netas = np.empty_like(ps)
 ks = np.empty_like(ps)
 lams = np.empty_like(ps)
 dnetas = np.empty_like(ps)
 dks = np.empty_like(ps)
 dfs = np.empty_like(ps)
+print(len(ps))
+
 
 for i, p in enumerate(ps):
     
@@ -59,7 +72,7 @@ for i, p in enumerate(ps):
     dnetas[i] = 1e6 * np.asscalar(fem.charge_grad(lams[i], phi1, wtip1, charge1, guu))
     dks[i] = np.asscalar(fem.stiff_grad(lams[i], phi1, wtip1, ks[i], guu))
     dfs[i] = np.asscalar(fem.freq_grad(lams[i], phi1))
-    
+
     
 fig, ax = plt.subplots()
 ax.plot(ps, netas)
@@ -81,7 +94,6 @@ plt.show()
 f1 = InterpolatedUnivariateSpline(ps, netas)
 df1_func = f1.derivative()
 df1 = df1_func(ps)
-
 
 fig, ax = plt.subplots()
 ax.plot(ps, df1)

@@ -32,11 +32,11 @@ class UniformMesh(object):
         def row(i): return [Node(i, j, fem_type) for j in range(nely + 1)]
         self._nodes = [row(i) for i in range(nelx + 1)]
 
-        self._elements = []
+        self.elements = []
         for i, j in np.ndindex(nelx, nely):
             if cantilever.topology[i][j] == 1:
                 e = self._create_element(i, j)
-                self._elements.append(e)
+                self.elements.append(e)
                 if cantilever.densities is not None:
                     e.set_penalty(cantilever.densities[i][j])
                 
@@ -53,7 +53,7 @@ class UniformMesh(object):
     
     
     def get_elements(self):
-        return self._elements
+        return self.elements
     
     
     def get_node(self, i, j):
@@ -89,7 +89,7 @@ class UniformMesh(object):
    
     def to_console(self):
         print('-- Elements --')
-        for e in self._elements:
+        for e in self.elements:
             print(e)
         print('\n-- Nodes --')
         for row in self._nodes:
@@ -129,11 +129,11 @@ class UniformMeshB(object):
         def row(i): return [Node(i, j, fem_type) for j in range(nely + 1)]
         self._nodes = [row(i) for i in range(nelx + 1)]
 
-        self._elements = []
+        self.elements = []
         for i, j in np.ndindex(nelx, nely):
             if cantilever.topology[i][j] == 1:
                 e = self._create_element(i, j)
-                self._elements.append(e)
+                self.elements.append(e)
                 if cantilever.densities is not None:
                     e.set_penalty(cantilever.densities[i][j])
                 
@@ -150,7 +150,7 @@ class UniformMeshB(object):
     
     
     def get_elements(self):
-        return self._elements
+        return self.elements
     
     
     def get_node(self, i, j):
@@ -186,7 +186,7 @@ class UniformMeshB(object):
    
     def to_console(self):
         print('-- Elements --')
-        for e in self._elements:
+        for e in self.elements:
             print(e)
         print('\n-- Nodes --')
         for row in self._nodes:

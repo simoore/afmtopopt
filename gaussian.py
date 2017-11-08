@@ -14,15 +14,15 @@ class Gaussian(object):
     average deflection will be close to the deflection at the location of the 
     tip. 'xtip', 'ytip', and 'sigma' are given in micrometres.
     """
-    def __init__(self, mesh, xtip, ytip, sigma):
+    def __init__(self, fem, cantilever, sigma):
 
-        self._elements = mesh.get_elements()
-        self._xtip = xtip
-        self._ytip = ytip
+        self._elements = fem.elements
+        self._xtip = cantilever.xtip
+        self._ytip = cantilever.ytip
         self._sigma = sigma
-        self._a = 1e6 * mesh.a  # distance in um
-        self._b = 1e6 * mesh.b  # distance in um
-        self._dimension = mesh.n_mdof
+        self._a = 1e6 * fem.mesh.a  # distance in um
+        self._b = 1e6 * fem.mesh.b  # distance in um
+        self._dimension = fem.mesh.n_mdof
     
         # Initial values of the operator and sensitivity.
         self._gau = self._assemble(self._operator_element)

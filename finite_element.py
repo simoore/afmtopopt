@@ -17,14 +17,14 @@ class LaminateFEM(object):
     
     def __init__(self, cantilever, material):
         
-        self._mesh = mesh.UniformMesh(cantilever, 'laminate')
-        self._model = LaminateModel(material, self._mesh.a, self._mesh.b)
-        self._elements = self._mesh.get_elements()
-        
         # Public Attributes.
+        self.mesh = mesh.UniformMesh(cantilever, 'laminate')
         self.fem_type = 'laminate'
-        self.n_elem = self._mesh.n_elem
+        self.n_elem = self.mesh.n_elem
         self.cantilever = cantilever
+        self.elements = self.mesh.get_elements()
+        
+        self._model = LaminateModel(material, self.mesh.a, self.mesh.b)
         
         self._muu = None
         self._kuu = None
@@ -42,11 +42,7 @@ class LaminateFEM(object):
         w, v = linalg.eigsh(k, k=n_modes, M=m, sigma=0, which='LM')
         return w, v
         
-    
-    def get_mesh(self):
-        return self._mesh
-    
-    
+
     def get_mass_matrix(self):
         return self._muu
     
@@ -64,11 +60,11 @@ class LaminateFEM(object):
     
     
     def get_element_densities(self):
-        return np.array([e.density for e in self._elements])
+        return np.array([e.density for e in self.elements])
     
             
     def update_element_densities(self, densities):
-        for x, e in zip(densities, self._elements):
+        for x, e in zip(densities, self.elements):
             e.set_penalty(x)
         self.assemble()
         
@@ -108,7 +104,7 @@ class LaminateFEM(object):
         p_ntriplet = 0
         c_ntriplet = 0
         
-        for e in self._elements:
+        for e in self.elements:
             
             m_bound = e.get_mechanical_boundary()
             e_bound = e.get_electrical_boundary()
@@ -137,17 +133,17 @@ class LaminateFEM(object):
                     c_val[c_ntriplet] = e.cap_penalty * kvve[ii, jj]
                     c_ntriplet += 1
         
-        muu_shape = (self._mesh.n_mdof, self._mesh.n_mdof)
-        kuu_shape = (self._mesh.n_mdof, self._mesh.n_mdof)
-        kuv_shape = (self._mesh.n_mdof, self._mesh.n_edof)
-        kvv_shape = (self._mesh.n_edof, self._mesh.n_edof)
+        muu_shape = (self.mesh.n_mdof, self.mesh.n_mdof)
+        kuu_shape = (self.mesh.n_mdof, self.mesh.n_mdof)
+        kuv_shape = (self.mesh.n_mdof, self.mesh.n_edof)
+        kvv_shape = (self.mesh.n_edof, self.mesh.n_edof)
         
         self._muu = sparse.coo_matrix((m_val, (k_row, k_col)), shape=muu_shape)
         self._kuu = sparse.coo_matrix((k_val, (k_row, k_col)), shape=kuu_shape)
         self._kuv = sparse.coo_matrix((p_val, (p_row, p_col)), shape=kuv_shape)
         self._kvv = sparse.coo_matrix((c_val, (c_row, c_col)), shape=kvv_shape)
     
-    
+
     def charge_grad(self, lam, phi, wtip, charge, guu):
         
         muu = self._muu
@@ -172,7 +168,7 @@ class LaminateFEM(object):
         beta = solution[-1]
         
         dneta = np.zeros(self.n_elem)
-        for i, e in enumerate(self._elements):
+        for i, e in enumerate(self.elements):
             phie = e.get_displacement(phi)
             alpe = e.get_displacement(alpha)
             pke = e.elastic_grad
@@ -208,7 +204,7 @@ class LaminateFEM(object):
         beta = solution[-1]
         
         dk = np.empty(self.n_elem)
-        for i, e in enumerate(self._elements):
+        for i, e in enumerate(self.elements):
             phie = e.get_displacement(phi)
             alpe = e.get_displacement(alpha)
             pke = e.elastic_grad
@@ -227,7 +223,7 @@ class LaminateFEM(object):
         kuue = self._model.get_stiffness_element()
         
         df = np.empty(self.n_elem)
-        for i, e in enumerate(self._elements):
+        for i, e in enumerate(self.elements):
             phie = e.get_displacement(phi)
             pke = e.elastic_grad
             pme = e.density_grad

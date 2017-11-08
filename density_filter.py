@@ -5,13 +5,14 @@ import scipy.sparse as sparse
 
 class DensityFilter(object):
     
-    def __init__(self, mesh, rmin):
-        self._operator = self._create_operator(mesh, rmin)
+    def __init__(self, fem, rmin):
+        self._operator = self._create_operator(fem, rmin)
         
     
-    def _create_operator(self, mesh, rmin):
+    def _create_operator(self, fem, rmin):
         
-        elements = mesh.get_elements()
+        elements = fem.elements
+        mesh = fem.mesh
         
         offset = []
         for ii in range(ceil(-rmin), ceil(rmin)):

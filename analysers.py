@@ -7,9 +7,9 @@ from gaussian import Gaussian
 
 
 class CantileverAnalyser(object):
-    def __init__(self, fem, cantilever):
-        self.cantilever = cantilever
-        self.mesh = fem.get_mesh()
+    
+    def __init__(self, fem):
+        self.cantilever = fem.cantilever
         self.fem = fem
         self.img_num = 0
         plt.ioff()
@@ -22,17 +22,20 @@ class CantileverAnalyser(object):
             print()
             
             
-    def plot_densities(self):
+    def plot_densities(self, filename=None):
         
-        data = np.empty((self.mesh.nelx, self.mesh.nely))
-        for e in self.mesh.get_elements():
+        data = np.empty((self.fem.mesh.nelx, self.fem.mesh.nely))
+        for e in self.fem.elements:
             data[e.nodes[0].i, e.nodes[0].j] = e.density_penalty
         fig, ax = plt.subplots()
         ax.pcolormesh(data.T, cmap=cm.Greys, vmin=0, vmax=1)
         plt.show()
+        if filename is not None:
+            fig.savefig(filename, dpi=300)
             
         
-    def identify_modal_parameters(self, xtip, ytip):
+    def identify_modal_parameters(self):
+        
         num_modes = 4
         w, v = self.fem.modal_analysis(num_modes)
         freq = np.sqrt(w) / 2 / np.pi
@@ -42,7 +45,7 @@ class CantileverAnalyser(object):
         if self.fem.fem_type == 'laminate':
             kuv = self.fem.get_piezoelectric_matrix()
         
-        gau = Gaussian(self.mesh, xtip, ytip, 0.1)
+        gau = Gaussian(self.fem, self.cantilever, 0.1)
         gau = gau.get_operator()
         
         # Equivalent stiffness and mass require an equivalence in potential 
@@ -81,7 +84,7 @@ class CantileverAnalyser(object):
         y = np.arange(0, ylim, 1)
         x, y = np.meshgrid(y, x)
         vmin, vmax = 0, 0
-        for row in self.mesh.get_nodes():
+        for row in self.fem.mesh.get_nodes():
             for n in row:
                 if n.void == False:
                     ze[n.i, n.j] = 0
@@ -101,13 +104,14 @@ class CantileverAnalyser(object):
                           alpha=0.3)
         #show(block=False)
         #plt.draw()
-        filename = ''.join(('mode', str(self.img_num), '.png'))
-        fig.savefig(filename)
-        axis.view_init(30, 45)
-        filename = ''.join(('mode', str(self.img_num), 'r.png'))
-        fig.savefig(filename)
-        self.img_num += 1
-        plt.close(fig)
+        plt.show()
+#        filename = ''.join(('solutions/mode', str(self.img_num), '.png'))
+#        fig.savefig(filename)
+#        axis.view_init(30, 45)
+#        filename = ''.join(('solutions/mode', str(self.img_num), 'r.png'))
+#        fig.savefig(filename)
+#        self.img_num += 1
+#        plt.close(fig)
         
         
     def plot_mesh(self):
