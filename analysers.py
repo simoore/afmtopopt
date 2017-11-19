@@ -5,10 +5,34 @@ import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 from gaussian import Gaussian
 
+from materials import PiezoMumpsMaterial
+from cantilevers import InitialCantileverFixedTip
+from laminate_fem import LaminateFEM
+from symmetry import Symmetry
+from density_filter import DensityFilter
+from projection import Projection
+
+
+def analyze_solution():
+     material = PiezoMumpsMaterial()
+     cantilever = InitialCantileverFixedTip()
+     fem = LaminateFEM(cantilever, material)
+     analyser = CantileverAnalyser(fem)
+     xs = np.load('solutions/project-b-design.npy')
+     sym = Symmetry(fem)
+     density_filter = DensityFilter(fem, 2.0)
+     projection = Projection(6.0)
+     x1 = sym.execute(xs)
+     x2 = density_filter.execute(x1)
+     x3 = projection.execute(x2)
+     fem.assemble(x3)
+     return analyser
+
 
 class CantileverAnalyser(object):
     
     def __init__(self, fem):
+        
         self.cantilever = fem.cantilever
         self.fem = fem
         self.img_num = 0
@@ -24,9 +48,10 @@ class CantileverAnalyser(object):
             
     def plot_densities(self, filename=None):
         
-        data = np.empty((self.fem.mesh.nelx, self.fem.mesh.nely))
-        for e in self.fem.elements:
-            data[e.nodes[0].i, e.nodes[0].j] = e.density_penalty
+        nelx, nely = self.fem.cantilever.topology.shape
+        data = np.empty((nelx, nely))
+        for e, p in zip(self.fem.mesh.elements, self.fem.density_penalty):
+            data[e.i, e.j] = p
         fig, ax = plt.subplots()
         ax.pcolormesh(data.T, cmap=cm.Greys, vmin=0, vmax=1)
         plt.show()
@@ -39,11 +64,11 @@ class CantileverAnalyser(object):
         num_modes = 4
         w, v = self.fem.modal_analysis(num_modes)
         freq = np.sqrt(w) / 2 / np.pi
-        mms = self.fem.get_mass_matrix()
-        kks = self.fem.get_stiffness_matrix()
+        mms = self.fem.muu
+        kks = self.fem.kuu
         
-        if self.fem.fem_type == 'laminate':
-            kuv = self.fem.get_piezoelectric_matrix()
+        if type(self.fem).__name__ == 'LaminateFEM':
+            kuv = self.fem.kuv
         
         gau = Gaussian(self.fem, self.cantilever, 0.1)
         gau = gau.get_operator()
@@ -65,7 +90,7 @@ class CantileverAnalyser(object):
             print('Dynamic Mass:      %g' % (M))
             print('Dynamic Stiffness: %g' % (K))
             print('Tip Deflection:    %g' % wtip)
-            if self.fem.fem_type == 'laminate':
+            if type(self.fem).__name__ == 'LaminateFEM':
                 Q = -kuv.T @ phi
                 eta = Q / 1e-12
                 print('Charge Gain (C/m): %g' % (Q))
@@ -84,16 +109,15 @@ class CantileverAnalyser(object):
         y = np.arange(0, ylim, 1)
         x, y = np.meshgrid(y, x)
         vmin, vmax = 0, 0
-        for row in self.fem.mesh.get_nodes():
-            for n in row:
-                if n.void == False:
-                    ze[n.i, n.j] = 0
-                    zz[n.i, n.j] = 0
-                    if n.boundary == False:
-                        ww = n.get_deflection_dof()
-                        zz[n.i, n.j] = v[ww, mode_num]
-                    vmin = min(vmin, zz[n.i, n.j])
-                    vmax = max(vmax, zz[n.i, n.j])
+        for n in self.fem.dof.dof_nodes:
+            if n.node.void == False:
+                ze[n.node.i, n.node.j] = 0
+                zz[n.node.i, n.node.j] = 0
+                if n.boundary == False:
+                    ww = n.deflection_dof
+                    zz[n.node.i, n.node.j] = v[ww, mode_num]
+                vmin = min(vmin, zz[n.node.i, n.node.j])
+                vmax = max(vmax, zz[n.node.i, n.node.j])
         #print('vmin, vmax: %g, %g' % (vmin, vmax))
         
         fig = figure()
@@ -115,10 +139,10 @@ class CantileverAnalyser(object):
         
         
     def plot_mesh(self):
-        elements = self.mesh.get_elements()
+        
         fig = figure()
         subplot = fig.add_subplot(111, aspect='equal')
-        for e in elements:
+        for e in self.fem.mesh.elements:
             node = e.nodes[0]
             x = node.i
             y = node.j
@@ -126,3 +150,4 @@ class CantileverAnalyser(object):
             subplot.add_patch(patches.Rectangle((x, y), width, height))
         subplot.autoscale_view(True, True, True)
         show()
+        

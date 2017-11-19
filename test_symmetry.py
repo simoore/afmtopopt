@@ -1,9 +1,8 @@
-from math import floor
 import unittest
 import numpy as np
 import cantilevers
 import materials
-import finite_element
+from laminate_fem import LaminateFEM
 import symmetry
 
 
@@ -28,16 +27,17 @@ class TestSymmetry(unittest.TestCase):
 
         material = materials.PiezoMumpsMaterial()
         cantilever = TestCantilever()
-        fem = finite_element.LaminateFEM(cantilever, material)
+        fem = LaminateFEM(cantilever, material)
         sym = symmetry.Symmetry(fem)
         
         # print(sym._operator)
         
+        nelx, nely = fem.cantilever.topology.shape
         design_vars = np.arange(0, 18)
         densities = sym.execute(design_vars)
-        topology = np.empty((fem.mesh.nelx, fem.mesh.nely))
+        topology = np.empty((nelx, nely))
         for e, d in zip(fem.mesh.elements, densities):
-            topology[floor(e.x0), floor(e.y0)] = d
+            topology[e.i, e.j] = d
             
         # print(topology)
         
@@ -51,9 +51,9 @@ class TestSymmetry(unittest.TestCase):
         
         material = materials.PiezoMumpsMaterial()
         cantilever = TestCantilever()
-        fem = finite_element.LaminateFEM(cantilever, material)
+        fem = LaminateFEM(cantilever, material)
         sym = symmetry.Symmetry(fem)
-        x0 = sym.initial(fem.get_element_densities())
+        x0 = sym.initial(fem.mesh.get_densities())
         
         #print(x0)
         

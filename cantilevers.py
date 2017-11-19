@@ -190,4 +190,3 @@ class InitialCantileverHigherFreq(Cantilever):
         name = 'Higher Frequency Cantilever'
         
         super().__init__(topology, a, b, xtip, ytip, densities, name)
-        

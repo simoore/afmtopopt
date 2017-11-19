@@ -23,22 +23,3 @@ class Projection(object):
         dys = self._beta * np.exp(-self._beta * xs) + np.exp(-self._beta)
         mat = sparse.diags(dys, shape=shape)
         return mat
-    
-    
-class LogisticProjection(object):
-    
-    def __init__(self, k):
-        self._k = k
-        
-        
-    def execute(self, xs):
-        return 1 / (1 + np.exp(-self._k * (xs - 0.5)))
-    
-    
-    def sensitivity(self, xs):
-        shape = (len(xs), len(xs))
-        term_a = np.exp(self._k * (xs - 0.5))
-        dys = self._k * term_a / (1 + term_a) ** 2
-        dys[-1] = 1
-        mat = sparse.diags(dys, shape=shape)
-        return mat

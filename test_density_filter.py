@@ -1,9 +1,10 @@
 import unittest
 from math import sqrt
 import numpy as np
-from cantilevers import RectangularCantilever
-from mesh import UniformMesh
+from cantilevers import RectangularCantilever, InitialCantileverFixedTip
+from laminate_fem import LaminateFEM
 from density_filter import DensityFilter
+from materials import PiezoMumpsMaterial
 
 class TestDensityFilter(unittest.TestCase):
     
@@ -13,11 +14,11 @@ class TestDensityFilter(unittest.TestCase):
         a = 1e-6
         b = 1e-6
         rmin = 1.5
-        fem_type = 'plate'
         
+        material = PiezoMumpsMaterial()
         rectangular_cantilever = RectangularCantilever(a, b, nelx, nely)
-        mesh = UniformMesh(rectangular_cantilever, fem_type)
-        density_filter = DensityFilter(mesh, rmin)
+        fem = LaminateFEM(rectangular_cantilever, material)
+        density_filter = DensityFilter(fem, rmin)
         
         diag = rmin - sqrt(2)
         row = [None for _ in range(12)]
@@ -40,6 +41,17 @@ class TestDensityFilter(unittest.TestCase):
             actual_row = np.squeeze(operator[i,:])
             row[i] = row[i] / sum(row[i])
             self.assertTrue(np.all(np.isclose(actual_row, row[i])))
+            
+            
+    def test_order(self):
+        material = PiezoMumpsMaterial()
+        cantilever = InitialCantileverFixedTip()
+        fem = LaminateFEM(cantilever, material)
+        density_filter = DensityFilter(fem, 0.5)
+        vec = np.arange(1600)
+        print(density_filter._operator.shape)
+        out = density_filter._operator @ vec
+        print(out.astype(int)) 
             
     
     

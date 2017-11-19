@@ -1,13 +1,14 @@
 import unittest
 import time
 import numpy as np
-from finite_element import LaminateFEM, LaminateModel
+from laminate_fem import LaminateFEM
+from laminate_model import LaminateModel
 from cantilevers import RectangularCantilever, BJNCantilever
 from materials import PiezoMumpsMaterial
 import materials, cantilevers, analysers
 from gaussian import Gaussian
-import _plate_materials
-import _plate_fem
+#import _plate_materials
+#import _plate_fem
 
 
 class SingleLayerSoiMumpsMaterial(materials.LaminateMaterial):
@@ -71,28 +72,28 @@ class DoubleLayerSoiMumpsMaterial(materials.LaminateMaterial):
         
 class TestLaminateFEM(unittest.TestCase):
     
-    def test_single_layer(self):
-        # Using the plate finite element, and the laminate finite element
-        # with a single layer, the mechanical properties should be indentical.
-        # Modal analysis is performed for both FEM formulation and the 
-        # eigenvalues are compared.
-        
-        material = SingleLayerSoiMumpsMaterial()
-        cantilever = BJNCantilever()
-        fem = LaminateFEM(cantilever, material)
-        wl, vl = fem.modal_analysis(4)
-
-        material = _plate_materials.SoiMumpsMaterial()
-        fem = _plate_fem.PlateFEM(cantilever, material)
-        wp, vp = fem.modal_analysis(4)
-        
-        self.assertTrue(np.all(np.isclose(wl, wp)))
-        
-        material = DoubleLayerSoiMumpsMaterial()
-        fem = LaminateFEM(cantilever, material)
-        wz, vz = fem.modal_analysis(4)
-        
-        self.assertTrue(np.all(np.isclose(wz, wp)))
+#    def test_single_layer(self):
+#        # Using the plate finite element, and the laminate finite element
+#        # with a single layer, the mechanical properties should be indentical.
+#        # Modal analysis is performed for both FEM formulation and the 
+#        # eigenvalues are compared.
+#        
+#        material = SingleLayerSoiMumpsMaterial()
+#        cantilever = BJNCantilever()
+#        fem = LaminateFEM(cantilever, material)
+#        wl, vl = fem.modal_analysis(4)
+#
+#        material = _plate_materials.SoiMumpsMaterial()
+#        fem = _plate_fem.PlateFEM(cantilever, material)
+#        wp, vp = fem.modal_analysis(4)
+#        
+#        self.assertTrue(np.all(np.isclose(wl, wp)))
+#        
+#        material = DoubleLayerSoiMumpsMaterial()
+#        fem = LaminateFEM(cantilever, material)
+#        wz, vz = fem.modal_analysis(4)
+#        
+#        self.assertTrue(np.all(np.isclose(wz, wp)))
         
         
     def test_compare_plate_10um_and_11_5um(self):
@@ -104,24 +105,24 @@ class TestLaminateFEM(unittest.TestCase):
         
         material = SingleLayerSoiMumpsMaterial()
         fem = LaminateFEM(cantilever, material)
-        analyser = analysers.CantileverAnalyser(fem, cantilever)
-        analyser.identify_modal_parameters_with_gaussian()
+        analyser = analysers.CantileverAnalyser(fem)
+        analyser.identify_modal_parameters()
         
         print()
         print('SOIMumps single layer of 11.5um') 
         
         material = ThickSoiMumpsMaterial()
         fem = LaminateFEM(cantilever, material)
-        analyser = analysers.CantileverAnalyser(fem, cantilever)
-        analyser.identify_modal_parameters_with_gaussian()
+        analyser = analysers.CantileverAnalyser(fem)
+        analyser.identify_modal_parameters()
         
         print()
         print('Piezoelectric material')
         
         material = PiezoMumpsMaterial()
         fem = LaminateFEM(cantilever, material)
-        analyser = analysers.CantileverAnalyser(fem, cantilever)
-        analyser.identify_modal_parameters_with_gaussian()
+        analyser = analysers.CantileverAnalyser(fem)
+        analyser.identify_modal_parameters()
         
         
     
@@ -132,18 +133,19 @@ class TestLaminateFEM(unittest.TestCase):
         material = PiezoMumpsMaterial()
         cantilever = BJNCantilever()
         fem = LaminateFEM(cantilever, material)
-        dens = np.ones(fem.n_elem)
+        dens = np.ones(fem.mesh.n_elem)
         lam, phi = fem.modal_analysis(1)
-        kuu = fem.get_stiffness_matrix()
-        kuv = fem.get_piezoelectric_matrix()
-        gaussian = Gaussian(fem.get_mesh(), 250, 790, 0.1)
+        kuu = fem.kuu
+        kuv = fem.kuv
+        gaussian = Gaussian(fem, cantilever, 0.1)
         guu = gaussian.get_operator()
         wtip = np.asscalar(guu @ phi)
         charge = np.asscalar(kuv.T @ phi)
         k1 = np.asscalar(phi.T @ kuu @ phi / wtip ** 2)
         
         t0 = time.time()
-        fem.update_element_densities(dens)
+        fem.set_penalty(dens)
+        fem.assemble()
         t1 = time.time()
         fem.charge_grad(lam[0], phi, wtip, charge, guu)
         t2 = time.time()
@@ -175,7 +177,7 @@ class TestLaminateFEM(unittest.TestCase):
         thickness = 0.5e-6
         epsilon = perm_free * 10.2
         capacitance = self.area * epsilon / thickness
-        kvv = self.fem_a.get_capacitance_matrix()
+        kvv = self.fem_a.kvv
         self.assertEqual(capacitance, kvv.A[0, 0])
         
             
@@ -192,6 +194,10 @@ class TestLaminateFEM(unittest.TestCase):
         term2 = bs2.T @ c @ bs3
         self.assertTrue(np.all(term1 == 0))
         self.assertTrue(np.all(term2 == 0))
+        
+        
+    def test_charge_grad(self):
+        pass
         
         
 if __name__ == '__main__':

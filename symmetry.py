@@ -1,4 +1,4 @@
-from math import ceil, floor
+from math import ceil
 import numpy as np
 import scipy.sparse as sparse
 
@@ -11,16 +11,17 @@ class Symmetry(object):
     """
     def __init__(self, fem):
 
-        ks = ceil(fem.mesh.nelx / 2)
+        nelx, nely = fem.cantilever.topology.shape
+        ks = ceil(nelx / 2)
         col = np.empty(fem.mesh.n_elem)
         for i, e in enumerate(fem.mesh.elements):
-            x = floor(e.x0)
-            y = floor(e.y0)
-            xsym = x if e.x0 < ks else fem.mesh.nelx - x - 1
+            x = e.i
+            y = e.j
+            xsym = x if (e.i + 0.1) < ks else nelx - x - 1
             col[i] = round(ks*y + xsym)
         row = np.arange(0, fem.mesh.n_elem)
         val = np.ones(fem.mesh.n_elem)
-        self.dimension = round(ks * fem.mesh.nely)
+        self.dimension = round(ks * nely)
         shape = (fem.mesh.n_elem, self.dimension)
         self._operator = sparse.coo_matrix((val, (row, col)), shape=shape)
         self._operator = self._operator.tocsr()

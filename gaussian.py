@@ -16,17 +16,17 @@ class Gaussian(object):
     """
     def __init__(self, fem, cantilever, sigma):
 
-        self._elements = fem.elements
+        self._elements = fem.dof.dof_elements
         self._xtip = cantilever.xtip
         self._ytip = cantilever.ytip
         self._sigma = sigma
         self._a = 1e6 * fem.mesh.a  # distance in um
         self._b = 1e6 * fem.mesh.b  # distance in um
-        self._dimension = fem.mesh.n_mdof
+        self._dimension = fem.dof.n_mdof
     
         # Initial values of the operator and sensitivity.
-        self._gau = self._assemble(self._operator_element)
-        self._dgau = self._assemble(self._sensitivity_element)
+        self._gau = self._assemble(self._operator_element).tocsr()
+        self._dgau = self._assemble(self._sensitivity_element).tocsr()
         
         
     def get_operator(self):
@@ -52,27 +52,28 @@ class Gaussian(object):
         ntriplet = 0
         
         for e in self._elements:
-            boundary = e.get_mechanical_boundary()
-            dof = e.get_mechanical_dof()
+            dof = e.mechanical_dof
             ge = element_func(e)
             for ii in range(20):
-                if boundary[ii] is False:
-                        row[ntriplet] = 0
-                        col[ntriplet] = dof[ii]
-                        val[ntriplet] = ge[0, ii]
-                        ntriplet += 1
-        
+                row[ntriplet] = 0
+                col[ntriplet] = dof[ii]
+                val[ntriplet] = ge[0, ii]
+                ntriplet += 1
+
         shape = (1, self._dimension)
         gau = sparse.coo_matrix((val, (row, col)), shape=shape)
         return gau 
     
     
     def _operator_element(self, element):
-                
+        
+        x0 = element.element.i + 0.5
+        y0 = element.element.j + 0.5
+        
         k1 = 1 / (4 * np.pi)
         k11 = 1 / (np.sqrt(2) * self._sigma)
-        xdif = 2 * self._a * element.x0 - self._xtip
-        ydif = 2 * self._b * element.y0 - self._ytip
+        xdif = 2 * self._a * x0 - self._xtip
+        ydif = 2 * self._b * y0 - self._ytip
         xa = (xdif - self._a) * k11
         xb = (xdif + self._a) * k11
         ya = (ydif - self._b) * k11
@@ -98,10 +99,13 @@ class Gaussian(object):
     
     def _sensitivity_element(self, element):
         
+        x0 = element.element.i + 0.5
+        y0 = element.element.j + 0.5
+        
         k1 = 1 / (4 * np.pi)
         k11 = 1 / (np.sqrt(2) * self._sigma)
-        xdif = 2 * self._a * element.x0 - self._xtip
-        ydif = 2 * self._b * element.y0 - self._ytip
+        xdif = 2 * self._a * x0 - self._xtip
+        ydif = 2 * self._b * y0 - self._ytip
         xa = (xdif - self._a) * k11
         xb = (xdif + self._a) * k11
         ya = (ydif - self._b) * k11

@@ -6,13 +6,16 @@ import scipy.sparse as sparse
 class DensityFilter(object):
     
     def __init__(self, fem, rmin):
+        """
+        :param rmin:
+        """
         self._operator = self._create_operator(fem, rmin)
         
     
     def _create_operator(self, fem, rmin):
         
-        elements = fem.elements
-        mesh = fem.mesh
+        elements = fem.mesh.elements
+        nelx, nely = fem.cantilever.topology.shape
         
         offset = []
         for ii in range(ceil(-rmin), ceil(rmin)):
@@ -20,12 +23,12 @@ class DensityFilter(object):
             for jj in range(ceil(-y0), ceil(y0)):
                 offset.append((ii, jj))
                 
-        neighbours = [[[] for _ in range(mesh.nely)] for _ in range(mesh.nelx)]
+        neighbours = [[[] for _ in range(nely)] for _ in range(nelx)]
         for e in elements:
             for o in offset:
                 ii = e.nodes[0].i + o[0]
                 jj = e.nodes[0].j + o[1]
-                if 0 <= ii < mesh.nelx and 0 <= jj < mesh.nely:
+                if 0 <= ii < nelx and 0 <= jj < nely:
                     neighbours[ii][jj].append(e)
         
         num_triplets = len(elements) * (2 * (ceil(rmin) - 1) + 1)**2
@@ -45,14 +48,14 @@ class DensityFilter(object):
             for e2 in neighbours[x][y]:
                 coefficient = max(0, rmin - norm(e1, e2))
                 if coefficient != 0:
-                    iH[k] = e1.id
-                    jH[k] = e2.id
+                    iH[k] = e1.index
+                    jH[k] = e2.index
                     sH[k] = coefficient
                     k += 1
                     
         shape = (len(elements), len(elements))
-        Hn = sparse.coo_matrix((sH, (iH, jH)), shape=shape).tocsc()
-        Hd = sparse.diags(1 / np.squeeze(np.sum(Hn, 1).A))
+        Hn = sparse.coo_matrix((sH, (iH, jH)), shape=shape).tocsr()
+        Hd = sparse.diags(1 / np.squeeze(np.sum(Hn, 1).A)).tocsr()
         H = Hd @ Hn
         return H
     

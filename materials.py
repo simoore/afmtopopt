@@ -188,7 +188,8 @@ class PiezoMumpsMaterial(LaminateMaterial):
         aln_e = 300e9
         aln_nu = 0.36
         aln_perm = perm_free * 10.2
-        aln_piezo = 2e-12
+        #aln_piezo = 2e-12
+        aln_piezo = 1
         aln = LaminateLayer(aln_h, aln_rho, aln_e, aln_nu, aln_perm, aln_piezo)
 
         al_h = 1e-6

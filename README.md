@@ -1,16 +1,30 @@
 ## Todo
 
-* Extend to higher order modes: add polarity of piezoelectric material for higher order modes.
-* Vectorize more of the finite element analysis.
-* Check sensitivies for large cantilever similiar to _analysis_for_sensitivities. There also appears
-    to be some convergence issues, it tends to oscillate around the final solution. This appears at the solution
-    Algorithm converged to a point of local infeasibility. Problem may be infeasible.
-* Still producing poorly connected structures... Propose a piezoelectric filter to penalize elements to 
-    properly connected to the structure.
+* Test connectivity logic.
 * Add options for fixed elements elements in the symmetry operator. This involves adding a tip radius parameter
     to the cantilever class to indicate which elements to keep around the tip.
-* Add a delta filter for tip displacement for non-changing tip location.
-* Add more elegant composition of regularization operators.
+* Change boundary conditions in connectivity operator to the tip.
+* Check mode shapes of solutions the appear to have torsional solutions. Print mode shapes of the solution. Maybe
+    locally infeasible solutions have a torsional mode.
+
+
+
+## Numerical and Other Issues
+
+* The dynamic range of the objective function is quite small, and as such, objective function scaling is required. 
+The ultimate solution to this problem is to properly scale the finite element analysis. Several Ipopt options
+for the restoration phase alleviate these issues.
+
+* Note that the Ipopt gradient checker doesn't use the initial values. This plays havoc with the structural analysis 
+and causes inconsistent jacobian values calculated with finite differences.
+
+* The selection of the objective scaling is performed as follows. With the automatric gradient based scaling option, 
+a set of identical problems with various scaling factors was executed. When a cluster of solutions is approximately 
+the same, a scaing factor in the center of that cluster was employed. Larger scaling tends to find better solutions.
+Choosing 1e9. Locally infeasible solutions may be due to torisional modes.
+
+* The execution of the Ipopt routines catches exceptions and when the return data is properly initialized, execution 
+continues with the incorrect numbers. Unit testing is required.
 
 
 ## Installation of Ipopt on Windows
@@ -63,3 +77,12 @@ and in the file `ipopt/ipopt_wrapper.py` change:
 ```
 
 The reexecute the `setup.py` script.
+
+
+## Extensions
+
+* Extend to higher order modes: add polarity of piezoelectric material for higher order modes.
+* Add a delta filter for tip displacement for non-changing tip location.
+* Allow for more than one electrical DOF.
+* Make the tip location an optimization design parameter.
+
