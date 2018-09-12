@@ -8,38 +8,52 @@ class Connectivity(object):
     
     def __init__(self, mesh):
         
-        self.dof = PoissonDOF(mesh)
-        self.ke, self.fe = self._compute_element_model(mesh.a, mesh.b)
-        
+        self._dof = PoissonDOF(mesh)
+        self._ke, self._fe = self._compute_element_model(mesh.a, mesh.b)
         self._mesh = mesh
-        self._center_value = CenterValue(self.dof)
+        self._center_value = CenterValue(self._dof)
         
         def kr_term(e): return np.hstack([e.dofs for _ in range(4)])
         def kc_term(e): return np.hstack([d*np.ones(4) for d in e.dofs]) 
-        kr = np.hstack([kr_term(e) for e in self.dof.dof_elements])
-        kc = np.hstack([kc_term(e) for e in self.dof.dof_elements])
-        fr = np.hstack([e.dofs for e in self.dof.dof_elements])
+        kr = np.hstack([kr_term(e) for e in self._dof.dof_elements])
+        kc = np.hstack([kc_term(e) for e in self._dof.dof_elements])
+        fr = np.hstack([e.dofs for e in self._dof.dof_elements])
         fc = np.zeros(fr.shape)
         
         self._k_index = (kr, kc)
         self._f_index = (fr, fc)
-        self._k_shape = (self.dof.n_dof, self.dof.n_dof)
-        self._f_shape = (self.dof.n_dof, 1) 
+        self._k_shape = (self._dof.n_dof, self._dof.n_dof)
+        self._f_shape = (self._dof.n_dof, 1) 
         self.assemble(mesh.get_densities())
+        
+        
+    @property
+    def dof(self):
+        return self._dof
+    
+    
+    @property
+    def ke(self):
+        return self._ke
+    
+    
+    @property
+    def fe(self):
+        return self._fe
         
         
     def get_conduction_matrix(self, free=False):
 
         if free is False:
             return self.ktau
-        return self.ktau[self.dof.free_dofs, :][:, self.dof.free_dofs]
+        return self.ktau[self._dof.free_dofs, :][:, self._dof.free_dofs]
     
     
     def get_heating_matrix(self, free=False):
         
         if free is False:
             return self.ftau
-        return self.ftau[self.dof.free_dofs, :]
+        return self.ftau[self._dof.free_dofs, :]
     
     
     def get_tau_mu_transform(self, free=False):
@@ -51,7 +65,7 @@ class Connectivity(object):
         transform = self._center_value.sensitivity()
         if free is False:
             return transform
-        return transform[:, self.dof.free_dofs]
+        return transform[:, self._dof.free_dofs]
     
     
     def get_connectivity_penalty(self, tau):
@@ -67,24 +81,28 @@ class Connectivity(object):
         and (ftau). Computes the solution of the equation Ku=f. Reinserts the
         boundary DOFs into the solution then returns.
         """
-        sysk = self.ktau[self.dof.free_dofs, :][:, self.dof.free_dofs]
-        sysf = self.ftau[self.dof.free_dofs, :]
+        sysk = self.ktau[self._dof.free_dofs, :][:, self._dof.free_dofs]
+        sysf = self.ftau[self._dof.free_dofs, :]
         ufree = sparse.linalg.spsolve(sysk, sysf)
-        uall = np.zeros(self.dof.all_dofs.shape)
-        uall[self.dof.free_dofs] = ufree
+        uall = np.zeros(self._dof.all_dofs.shape)
+        uall[self._dof.free_dofs] = ufree
         return uall, ufree
     
         
     def assemble(self, xs):
-
+        """Determine conductance and heat source for each element from the
+        puesdo density (xs). Scales the conductance and heat source element
+        matrices (self._ke, self._fe) for each element and assembles them into
+        sparse matrices (self.ktau, self.ftau).
+        """
         if xs is None:
             return
         
         k, q = self._set_penalty(xs)
         kexpand = np.expand_dims(k, axis=1)
         fexpand = np.expand_dims(q, axis=1)
-        kv = np.ravel(kexpand @ np.expand_dims(self.ke.ravel(), axis=0))
-        fv = np.ravel(fexpand @ self.fe.T)
+        kv = np.ravel(kexpand @ np.expand_dims(self._ke.ravel(), axis=0))
+        fv = np.ravel(fexpand @ self._fe.T)
         
         sysk = sparse.coo_matrix((kv, self._k_index), shape=self._k_shape)
         sysf = sparse.coo_matrix((fv, self._f_index), shape=self._f_shape)

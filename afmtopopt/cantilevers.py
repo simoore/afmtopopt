@@ -95,7 +95,7 @@ class RectangularCantilever(Cantilever):
     def __init__(self, a, b, nelx, nely):
         
         topology = np.ones((nelx, nely))
-        xtip = 2e6 * a * nelx - 2
+        xtip = 1e6 * a * nelx
         ytip = 2e6 * b * nely - 2
         densities = topology
         name = 'Rectangular Cantilever'
@@ -190,3 +190,167 @@ class InitialCantileverHigherFreq(Cantilever):
         name = 'Higher Frequency Cantilever'
         
         super().__init__(topology, a, b, xtip, ytip, densities, name)
+        
+        
+class InitialCantileverRectangular(Cantilever):
+    
+    def __init__(self):
+        
+        a = 5.0e-6
+        b = 10.0e-6
+        nelx = 40
+        nely = 40
+        xtip = 1e6 * (a * nelx)
+        ytip = 1e6 * (2 * nely * b - b)
+        name = 'Rectangular Cantilever'
+        
+        topology = np.ones((nelx, nely))
+        
+        top = 1e-4 * np.ones((10, nely))
+        mid = np.ones((20, nely))
+        bot = 1e-4 * np.ones((10, nely))
+        densities = np.vstack((top, mid, bot))
+        
+        super().__init__(topology, a, b, xtip, ytip, densities, name)
+        
+        
+class InitialCantileverRectangularStep(Cantilever):
+    
+    def __init__(self):
+        
+        a = 5.0e-6
+        b = 10.0e-6
+        nelx = 40
+        nely = 40
+        xtip = 1e6 * (a * nelx)
+        ytip = 1e6 * (2 * nely * b - b)
+        name = 'Rectangular Cantilever with Step'
+        
+        topology = np.ones((nelx, nely))
+        
+        btop = 1e-4 * np.ones((5, 20))
+        bmid = np.ones((30, 20))
+        bbot = 1e-4 * np.ones((5, 20))
+        base = np.vstack((btop, bmid, bbot))
+        utop = 1e-4 * np.ones((15, 20))
+        umid = np.ones((10, 20))
+        ubot = 1e-4 * np.ones((15, 20))
+        top = np.vstack((utop, umid, ubot))
+        densities = np.hstack((base, top))
+        
+        
+        super().__init__(topology, a, b, xtip, ytip, densities, name)
+        
+        
+class StandardA(Cantilever):
+    
+    def __init__(self):
+        
+        a = 3.125e-6
+        b = 6.25e-6
+        nelx = 40
+        nely = 40
+        xtip = 1e6 * (a * nelx)
+        ytip = 1e6 * (2 * nely * b - b)
+        name = 'Slow Standard'
+        
+        topology = np.ones((nelx, nely))
+        
+        top = 1e-4 * np.ones((10, nely))
+        mid = np.ones((20, nely))
+        bot = 1e-4 * np.ones((10, nely))
+        densities = np.vstack((top, mid, bot))
+        
+        super().__init__(topology, a, b, xtip, ytip, densities, name)
+        
+        
+class StandardB(Cantilever):
+    
+    def __init__(self):
+        
+        a = 3.125e-6
+        b = 6.25e-6
+        nelx = 40
+        nely = 40
+        xtip = 1e6 * (a * nelx)
+        ytip = 1e6 * (2 * nely * b - b)
+        name = 'Fast Standard'
+        
+        topology = np.ones((nelx, nely))
+        
+        btop = 1e-4 * np.ones((5, 20))
+        bmid = np.ones((30, 20))
+        bbot = 1e-4 * np.ones((5, 20))
+        base = np.vstack((btop, bmid, bbot))
+        utop = 1e-4 * np.ones((15, 20))
+        umid = np.ones((10, 20))
+        ubot = 1e-4 * np.ones((15, 20))
+        top = np.vstack((utop, umid, ubot))
+        densities = np.hstack((base, top))
+        
+        
+        super().__init__(topology, a, b, xtip, ytip, densities, name)
+        
+        
+class StandardC(Cantilever):
+    
+    def __init__(self):
+        
+        a = 3.125e-6
+        b = 6.25e-6
+        nelx = 40
+        nely = 40
+        xtip = 1e6 * (a * nelx)
+        ytip = 1e6 * (2 * nely * b - b)
+        name = 'Slow Standard With Modified Topology'
+        
+        base = np.ones((40, 30))
+        a1 = np.zeros((10, 10))
+        a2 = np.ones((20, 10))
+        a3 = np.zeros((10, 10))
+        top = np.vstack((a1, a2, a3))
+        topology = np.hstack((base, top))
+        #topology = np.ones((nelx, nely))
+        
+        top = 1e-4 * np.ones((10, nely))
+        mid = np.ones((20, nely))
+        bot = 1e-4 * np.ones((10, nely))
+        densities = np.vstack((top, mid, bot))
+        
+        super().__init__(topology, a, b, xtip, ytip, densities, name)
+        
+        
+class StandardD(Cantilever):
+    
+    def __init__(self):
+        
+        a = 3.125e-6
+        b = 6.25e-6
+        nelx = 40
+        nely = 40
+        xtip = 1e6 * (a * nelx)
+        ytip = 1e6 * (2 * nely * b - b)
+        name = 'Fast Standard With Modified Topology'
+        
+        
+        base = np.ones((40, 30))
+        a1 = np.zeros((10, 10))
+        a2 = np.ones((20, 10))
+        a3 = np.zeros((10, 10))
+        top = np.vstack((a1, a2, a3))
+        topology = np.hstack((base, top))
+        #topology = np.ones((nelx, nely))
+        
+        btop = 1e-4 * np.ones((5, 20))
+        bmid = np.ones((30, 20))
+        bbot = 1e-4 * np.ones((5, 20))
+        base = np.vstack((btop, bmid, bbot))
+        utop = 1e-4 * np.ones((15, 20))
+        umid = np.ones((10, 20))
+        ubot = 1e-4 * np.ones((15, 20))
+        top = np.vstack((utop, umid, ubot))
+        densities = np.hstack((base, top))
+        
+        
+        super().__init__(topology, a, b, xtip, ytip, densities, name)
+        

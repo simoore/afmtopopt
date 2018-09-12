@@ -8,15 +8,16 @@ from connectivity import Connectivity
 
 class LaminateAnalysis(object):
     
-    def __init__(self, cantilever, material, to_connect):
+    def __init__(self, cantilever, material, to_connect, pmu=0.0):
         """
         :param cantilever: The cantilever object that defines the initial
             conditions of the topology optimization routine.
         :param to_connect: Indicates whether to apply the connectivity 
             penalizations.
+        :param pmu: The connectivity penalty factor.
         """
         self.to_connect = to_connect
-        self.fem = LaminateFEM(cantilever, material, to_connect)
+        self.fem = LaminateFEM(cantilever, material, to_connect, pmu)
         self.connectivity = Connectivity(self.fem.mesh)
         self.gaussian = Gaussian(self.fem, self.fem.cantilever, 0.1)
         self.mdofmat = self.prepare_mdof_matrix()
@@ -108,7 +109,7 @@ class LaminateAnalysis(object):
         kuue = self.fem.model.get_stiffness_element()
         muue = self.fem.model.get_mass_element()
         ktaue = self.connectivity.ke
-        ftau = self.connectivity.get_heating_matrix()
+        #ftau = self.connectivity.get_heating_matrix()
         
         # Each column is k_e * phi_e, where phi_e is the mode shape over the
         # single element and k_e is an element matrix.
@@ -116,7 +117,7 @@ class LaminateAnalysis(object):
         self.kuue_phie = np.squeeze(kuue @ phie)      # 20 x n_elem
         self.muue_phie = np.squeeze(muue @ phie)      # 20 x n_elem
         self.ktaue_taue = np.squeeze(ktaue @ taue)    # 4 x n_elem
-        self.ftaue = np.squeeze(ftau.A)[self.tdofmat] # 4 x n_elem
+        #self.ftaue = np.squeeze(ftau.A)[self.tdofmat] # 4 x n_elem
         
         # Row vector 1 x n_elem, each element is phi_e^T * k_e * phi_e.
         self.phi_m_phi = np.sum(np.squeeze(phie * self.muue_phie), 0)
@@ -174,7 +175,7 @@ class LaminateAnalysis(object):
         dg2_drho_free = - pme * self.phi_m_phi
         
         # Generate the matrix dg3_drho.
-        dg3_drho_vald = (pkt * self.ktaue_taue - pft * self.ftaue)
+        dg3_drho_vald = (pkt * self.ktaue_taue - pft * self.connectivity.fe)
         dg3_drho_row = self.tdofmat.ravel()
         dg3_drho_col = np.concatenate([np.arange(n_elem) for _ in range(4)])
         dg3_drho_val = dg3_drho_vald.ravel()
@@ -188,27 +189,6 @@ class LaminateAnalysis(object):
         self.dg1_drho_free = dg1_drho_free
         self.dg2_drho_free = dg2_drho_free
         self.dg3_drho_free = dg3_drho_free
-        
-        # test dg3_drho
-#        _ndof = len(self.connectivity.dof.all_dofs)
-#        _dg3 = np.zeros((len(self.connectivity.dof.free_dofs), self.fem.mesh.n_elem))
-#        _, _taufree = self.connectivity.thermal_analysis()
-#        for i, e in enumerate(self.connectivity.dof.dof_elements):
-#            ake = np.zeros((_ndof, _ndof))
-#            afe = np.zeros((_ndof, 1))
-#            for i in range(4):
-#                for j in range(4):
-#                    ake[e.dofs[i], e.dofs[j]] = self.connectivity.ke[i, j]
-#            afe[e.dofs, :] = self.connectivity.fe
-#            ake_free = ake[self.connectivity.dof.free_dofs, :][:, self.connectivity.dof.free_dofs]
-#            afe_free = afe[self.connectivity.dof.free_dofs, :]
-#            kpen = self.connectivity.thermal_grad[i]
-#            fpen = self.connectivity.heat_grad[i]
-#            _tt = np.expand_dims(_taufree, axis=1)
-#            _dg3[:, i] = np.squeeze(kpen * (ake_free @ _tt) - fpen * (afe_free))
-#            
-#        print(np.all(np.isclose(_dg3, self.dg3_drho_free.A)))
-        
         
         
     def charge_grad(self, lam, phi, wtip, charge):

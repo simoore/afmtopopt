@@ -49,19 +49,30 @@ class CantileverAnalyser(object):
     def plot_densities(self, filename=None):
         
         nelx, nely = self.fem.cantilever.topology.shape
-        data = np.empty((nelx, nely))
+        a = self.fem.cantilever.a
+        b = self.fem.cantilever.b
+        data = np.zeros((nelx, nely))
+        
+        x = np.linspace(0, nelx*2e6*a, nelx+1, endpoint=True)
+        y = np.linspace(0, nely*2e6*b, nely+1, endpoint=True)
+        xv, yv = np.meshgrid(x, y)
+        
         for e, p in zip(self.fem.mesh.elements, self.fem.density_penalty):
             data[e.i, e.j] = p
+
         fig, ax = plt.subplots()
-        ax.pcolormesh(data.T, cmap=cm.Greys, vmin=0, vmax=1)
+        ax.pcolormesh(xv, yv, data.T, cmap=cm.Greys, vmin=0, vmax=1)
+        ax.set_xlim(0, nelx*2e6*a)
+        ax.set_ylim(0, nely*2e6*b)
+        ax.set_aspect('equal')
         plt.show()
         if filename is not None:
-            fig.savefig(filename, dpi=300)
+            #plt.tight_layout(pad=0.0)
+            fig.savefig(filename, dpi=300, bbox_inches='tight')
             
         
-    def identify_modal_parameters(self):
+    def identify_modal_parameters(self, num_modes=5):
         
-        num_modes = 4
         w, v = self.fem.modal_analysis(num_modes)
         freq = np.sqrt(w) / 2 / np.pi
         mms = self.fem.muu
@@ -99,6 +110,11 @@ class CantileverAnalyser(object):
                     
         
     def plot_mode(self, mode_num):
+        """
+        :param mode_num: The mode number to plot. Note that 0 is the first
+                         mode.
+        """
+        
         _, v = self.fem.modal_analysis(mode_num + 1)
         nelx, nely = self.cantilever.topology.shape
         xlim = nelx + 2

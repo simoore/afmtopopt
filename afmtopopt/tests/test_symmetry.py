@@ -12,10 +12,10 @@ class TestCantilever(cantilevers.Cantilever):
         
         a = 5e-6
         b = 5e-6
-        topology = np.ones((5, 6))
+        topology = np.ones((3, 4))
         xtip = 25
         ytip = 55
-        densities = np.ones((5, 6))
+        densities = np.ones((3, 4))
         name = 'Symmetry Test Cantilever'
         
         super().__init__(topology, a, b, xtip, ytip, densities, name)
@@ -28,12 +28,13 @@ class TestSymmetry(unittest.TestCase):
         material = materials.PiezoMumpsMaterial()
         cantilever = TestCantilever()
         fem = LaminateFEM(cantilever, material)
-        sym = symmetry.Symmetry(fem)
+        sym = symmetry.Symmetry(fem, original=False)
+        #sym = symmetry.Symmetry(fem, original=True)
         
-        # print(sym._operator)
+        print(sym._operator)
         
         nelx, nely = fem.cantilever.topology.shape
-        design_vars = np.arange(0, 18)
+        design_vars = np.arange(0, sym.dimension)
         densities = sym.execute(design_vars)
         topology = np.empty((nelx, nely))
         for e, d in zip(fem.mesh.elements, densities):

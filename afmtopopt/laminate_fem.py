@@ -16,9 +16,10 @@ class LaminateFEM(object):
                 define the domain over which the finite element analysis is 
                 applied.
     """
-    def __init__(self, cantilever, material, to_connect=False):
+    def __init__(self, cantilever, material, to_connect=False, pmu=0.0):
         
         self.to_connect = to_connect
+        self.pmu = pmu
         self.cantilever = cantilever
         self.mesh = UniformMesh(cantilever)
         self.dof = LaminateDOF(self.mesh)
@@ -67,7 +68,8 @@ class LaminateFEM(object):
         
     
     def set_penalty(self, xs, mu=None):
-
+        """self.piezo_temp_grad is the coefficient for df1/dmu
+        """
         self.density = xs
                 
         self.density_penalty = xs ** 3 
@@ -82,10 +84,10 @@ class LaminateFEM(object):
 
         if self.to_connect is True:
             mu = np.zeros_like(xs) if mu is None else mu
-            mu_scale = np.exp(-mu)
+            mu_scale = np.exp(-self.pmu * mu)
             self.piezo_penalty = self.piezo_penalty * mu_scale
             self.piezo_grad = self.piezo_grad * mu_scale
-            self.piezo_temp_grad = -self.piezo_penalty
+            self.piezo_temp_grad = -self.pmu * self.piezo_penalty
         else:
             self.piezo_temp_grad = np.zeros_like(self.piezo_penalty)
         

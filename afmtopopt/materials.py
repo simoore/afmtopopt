@@ -162,7 +162,7 @@ class PiezoMumpsMaterial(LaminateMaterial):
     Devices on AlN Epitaxial Films; IEEE Transactions on Sonics and Ultrasonics 
     SU-32(5) 1985 pp 634-644.
     
-    This article is referenced anymore.
+    This article isn't referenced anymore.
     
     Joseph C Doll and Beth L Pruitt; Design of piezoresistive versus 
     piezoelectric contact mode scanning probes; J. Micromech. Microeng.

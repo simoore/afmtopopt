@@ -6,19 +6,17 @@ import matplotlib.pyplot as plt
 from scipy.interpolate import InterpolatedUnivariateSpline
 from gaussian import Gaussian
 from laminate_fem import LaminateFEM
-from connectivity import Connectivity
+#from connectivity import Connectivity
 #import scipy.sparse as sparse
 
-"""The results of this analysis seem to show that the gradients are being 
-computed correctly from the pseudo-densities to the gradient of the stiffness,
-frequency and charge.
+"""The mapping from tau to f1 (the objective) anf g3 (the thermal system) seem
+fine. Remember that the thermal system relies soley on the free-dofs.
 """
 
 material = materials.PiezoMumpsMaterial()
 cantilever = cantilevers.InitialCantileverFixedTip()
 la = laminate_analysis.LaminateAnalysis(cantilever, material, True)
 fem = LaminateFEM(cantilever, material, True)
-connectivity = Connectivity(fem.mesh)
 gaussian = Gaussian(fem, fem.cantilever, 0.1)
 
 index = 1000  # the index of the pseudo-density to vary.
@@ -37,12 +35,11 @@ mdofmat = la.mdofmat
 tdofmat = la.tdofmat
 
 for i, p in enumerate(ps):
-    
-    #pnew[index] = p
+
     tnew[index] = p
 
-    # Update piezoelectric laminate model and perform modal analysis.
-    mu = connectivity.get_connectivity_penalty(tnew)    
+    # Update piezoelectric laminate model and perform modal analysis. 
+    mu = la.connectivity.get_connectivity_penalty(tnew)
     fem.assemble(pnew, mu)
     w, v = fem.modal_analysis(1)
     guu = gaussian.get_operator()
@@ -59,7 +56,7 @@ for i, p in enumerate(ps):
     charge1 = np.sum(charge_elem)
     neta1 = charge1 / wtip1
 
-    ttau_free = connectivity.get_tau_mu_transform(free=True)
+    ttau_free = la.connectivity.get_tau_mu_transform(free=True)
     pte = fem.piezo_temp_grad
     
     # Compute the solution to the second block for gamma.
@@ -67,29 +64,25 @@ for i, p in enumerate(ps):
     dft = dfu @ ttau_free
     
     # Since we are changing all tau, the derivatives should match.
-    dft_all = np.zeros(connectivity.dof.n_dof)
-    dft_all[connectivity.dof.free_dofs] = dft
+    dft_all = np.zeros(la.connectivity.dof.n_dof)
+    dft_all[la.connectivity.dof.free_dofs] = dft
     
     # g3 is the thermal system.
-    ktau_free = connectivity.get_conduction_matrix(free=True)
-    ftau_free = connectivity.get_heating_matrix(free=True)
-    tau_free = np.expand_dims(tnew[connectivity.dof.free_dofs], axis=1)
+    ktau_free = la.connectivity.get_conduction_matrix(free=True)
+    ftau_free = la.connectivity.get_heating_matrix(free=True)
+    tau_free = np.expand_dims(tnew[la.connectivity.dof.free_dofs], axis=1)
     g3 = ktau_free @ tau_free - ftau_free
-    dg3_dtau = ktau_free
+    #g3_all = np.zeros(la.connectivity.dof.n_dof)
+    #g3_all[la.connectivity.dof.free_dofs] = g3
+    dg3_dtau_all = np.zeros((len(la.connectivity.dof.free_dofs), la.connectivity.dof.n_dof))
+    dg3_dtau_all[:, la.connectivity.dof.free_dofs] = ktau_free.A
     
     
-    #######################
-    # This is where i was up toooooooo...
-    #######################
-    
-    #lams[i] = la.f1
     netas[i] = neta1
-    g3s[i] = g3[index, 0]
-    #ks[i] = la.k1
+    g3s[i] = g3[index]
+    
     dnetas[i] = dft_all[index]
-    dg3_dtaus[i] = dg3_dtau[index, index]
-    #dks[i] = la.dk1[index]
-    #dfs[i] = la.df1[index]
+    dg3_dtaus[i] = dg3_dtau_all[index, index]
     
     print('>', end='')
     
@@ -105,11 +98,6 @@ fig, ax = plt.subplots()
 ax.plot(ps, g3s)
 ax.set_title('Thermal system')
 plt.show()
-
-#fig, ax = plt.subplots()
-#ax.plot(ps, lams)
-#ax.set_title('Frequency Characterisitic')
-#plt.show()
 
 
 # neta derivative
@@ -133,14 +121,3 @@ ax.plot(ps, df2, linewidth=2.0)
 ax.plot(ps, dg3_dtaus)
 ax.set_title('dg3 dtau Derivative')
 plt.show()
-
-## lam derivative
-#f3 = InterpolatedUnivariateSpline(ps, lams)
-#df3_func = f3.derivative()
-#df3 = df3_func(ps)
-#
-#fig, ax = plt.subplots()
-#ax.plot(ps, df3, linewidth=2.0)
-#ax.plot(ps, dfs)
-#ax.set_title('Frequency Derivative')
-#plt.show()

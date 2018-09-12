@@ -2,8 +2,6 @@ import time
 import numpy as np
 import ipopt
 import logging
-from ruamel.yaml import YAML
-import pprint
 import os
 
 
@@ -18,45 +16,6 @@ from laminate_analysis import LaminateAnalysis
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
-
-
-def main():
-    
-    batch = ['solutions/project-b.yaml',
-             'solutions/project-c.yaml',
-             'solutions/project-d.yaml',
-             'solutions/project-f.yaml',
-             'solutions/project-g.yaml',
-             'solutions/project-h.yaml']
-    opt_list = []
-    
-    for b in batch:
-        params = load_parameters(b)
-        print('-- Parameters --\n')
-        pprint.pprint(params)
-        print()
-    
-        optimizer = TopologyOptimizer(params)
-        optimizer.cantilever.to_console()
-    
-        print('\n--- Initial Analysis ---')
-        optimizer.analyser.plot_densities()
-        optimizer.analyser.identify_modal_parameters()
-    
-        optimizer.execute()
-        opt_list.append(optimizer)
-        
-    return opt_list
-
-
-def load_parameters(filename):
-    
-    with open(filename, 'r') as f:
-        yaml = YAML(typ='safe')
-        params = yaml.load(f)
-        params['tag'] = os.path.splitext(os.path.basename(f.name))[0]
-        params['dir'] = os.path.dirname(f.name)
-        return params
 
 
 class TopologyOptimizer(object):
@@ -74,10 +33,11 @@ class TopologyOptimizer(object):
         self.dir = params['dir']
         to_connect = params['to_connect']
         obj_scale = params['obj_scale']
+        pmu = params['pmu']
         
         self.material = materials.PiezoMumpsMaterial()
         self.cantilever = self.select_cantilever()
-        self.la = LaminateAnalysis(self.cantilever, self.material, to_connect)
+        self.la = LaminateAnalysis(self.cantilever, self.material, to_connect, pmu)
         self.analyser = analysers.CantileverAnalyser(self.la.fem)
         
         self.sym = symmetry.Symmetry(self.la.fem)
@@ -277,9 +237,17 @@ class TopologyOptimizer(object):
     def select_cantilever(self):
         if self.cantilever_key == 'InitialCantileverFixedTip':
             return cantilevers.InitialCantileverFixedTip()
+        elif self.cantilever_key == 'InitialCantileverRectangular':
+            return cantilevers.InitialCantileverRectangular()
+        elif self.cantilever_key == 'InitialCantileverRectangularStep':
+            return cantilevers.InitialCantileverRectangularStep()
+        elif self.cantilever_key == 'StandardA':
+            return cantilevers.StandardA()
+        elif self.cantilever_key == 'StandardB':
+            return cantilevers.StandardB()
+        elif self.cantilever_key == 'StandardC':
+            return cantilevers.StandardC()
+        elif self.cantilever_key == 'StandardD':
+            return cantilevers.StandardD()
         else:
             return cantilevers.InitialCantileverHigherFreq()
-
-    
-if __name__ == '__main__':
-    opt = main()

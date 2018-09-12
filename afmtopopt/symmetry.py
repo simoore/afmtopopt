@@ -4,13 +4,18 @@ import scipy.sparse as sparse
 
 
 class Symmetry(object):
-    """
-    Public Attributes
-    -----------------
-    :self.dimension: The number of design variables.
-    """
-    def __init__(self, fem):
 
+    def __init__(self, fem, original=False):
+
+        if original is True:
+            self._init_a(fem)
+        else:
+            self._init_b(fem)
+        
+    
+    def _init_a(self, fem):
+        """Only works for rectangular domains. Use _init_b in future.
+        """
         nelx, nely = fem.cantilever.topology.shape
         ks = ceil(nelx / 2)
         col = np.empty(fem.mesh.n_elem)
@@ -21,10 +26,39 @@ class Symmetry(object):
             col[i] = round(ks*y + xsym)
         row = np.arange(0, fem.mesh.n_elem)
         val = np.ones(fem.mesh.n_elem)
-        self.dimension = round(ks * nely)
-        shape = (fem.mesh.n_elem, self.dimension)
+        self._dimension = round(ks * nely)
+        shape = (fem.mesh.n_elem, self._dimension)
         self._operator = sparse.coo_matrix((val, (row, col)), shape=shape)
         self._operator = self._operator.tocsr()
+        
+        
+    def _init_b(self, fem):
+
+        nelx, nely = fem.cantilever.topology.shape
+        ks = ceil(nelx / 2)
+        col = np.empty(fem.mesh.n_elem)
+        col_2D = np.zeros((nelx, nely))
+        col_num = 0
+        for i, e in enumerate(fem.mesh.elements):
+            if e.i + 0.1 < ks:
+                col_2D[e.i, e.j] = col_num
+                col[i] = col_2D[e.i, e.j]
+                col_num += 1
+        for i, e in enumerate(fem.mesh.elements):
+            if e.i + 0.1 >= ks:
+                col_2D[e.i, e.j] = col_2D[nelx - e.i - 1, e.j]
+                col[i] = col_2D[e.i, e.j]
+        row = np.arange(0, fem.mesh.n_elem)
+        val = np.ones(fem.mesh.n_elem)
+        self._dimension = int(max(col) + 1)
+        shape = (fem.mesh.n_elem, self._dimension)
+        self._operator = sparse.coo_matrix((val, (row, col)), shape=shape)
+        self._operator = self._operator.tocsr()
+        
+        
+    @property
+    def dimension(self):
+        return self._dimension
         
         
     def initial(self, xs):

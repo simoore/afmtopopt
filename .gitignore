@@ -1,6 +1,8 @@
 .idea/
-solutions/
-scratch/
+_solutions/
+_scratch/
+_plots/
+_coventor/
 _*
 
 # Byte-compiled / optimized / DLL files
