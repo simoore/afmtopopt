@@ -3,7 +3,7 @@ _solutions/
 _scratch/
 _plots/
 _coventor/
-_*
+_*.py
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

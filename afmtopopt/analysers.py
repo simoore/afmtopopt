@@ -3,14 +3,14 @@ from matplotlib import patches, cm
 from matplotlib.pyplot import figure, show
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
-from gaussian import Gaussian
 
-from materials import PiezoMumpsMaterial
-from cantilevers import InitialCantileverFixedTip
-from laminate_fem import LaminateFEM
-from symmetry import Symmetry
-from density_filter import DensityFilter
-from projection import Projection
+from .gaussian import Gaussian
+from .materials import PiezoMumpsMaterial
+from .cantilevers import InitialCantileverFixedTip
+from .laminate_fem import LaminateFEM
+from .symmetry import Symmetry
+from .density_filter import DensityFilter
+from .projection import Projection
 
 
 def analyze_solution():

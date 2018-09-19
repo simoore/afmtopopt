@@ -2,9 +2,9 @@ import numpy as np
 import scipy.sparse as sparse
 import scipy.sparse.linalg as linalg
 
-from mesh_v2 import UniformMesh
-from laminate_model import LaminateModel
-from laminate_dof import LaminateDOF
+from .mesh_v2 import UniformMesh
+from .laminate_model import LaminateModel
+from .laminate_dof import LaminateDOF
 
 
 class LaminateFEM(object):

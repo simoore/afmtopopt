@@ -354,3 +354,114 @@ class StandardD(Cantilever):
         
         super().__init__(topology, a, b, xtip, ytip, densities, name)
         
+
+class StandardE(Cantilever):
+    
+    def __init__(self):
+        
+        a = 6.25e-6
+        b = 6.25e-6
+        nelx = 40
+        nely = 40
+        xtip = 1e6 * (a * nelx)
+        ytip = 1e6 * (2 * nely * b - b)
+        name = 'Slow Standard With Wide Modified Topology'
+        
+        base = np.ones((40, 30))
+        a1 = np.zeros((15, 10))
+        a2 = np.ones((10, 10))
+        a3 = np.zeros((15, 10))
+        top = np.vstack((a1, a2, a3))
+        topology = np.hstack((base, top))
+        #topology = np.ones((nelx, nely))
+        
+        top = 1e-4 * np.ones((15, nely))
+        mid = np.ones((10, nely))
+        bot = 1e-4 * np.ones((15, nely))
+        densities = np.vstack((top, mid, bot))
+        
+        super().__init__(topology, a, b, xtip, ytip, densities, name)
+  
+    
+class StandardF(Cantilever):
+    
+    def __init__(self):
+        
+        a = 3.125e-6
+        b = 6.25e-6
+        nelx = 80
+        nely = 40
+        xtip = 1e6 * (a * nelx)
+        ytip = 1e6 * (2 * nely * b - b)
+        name = 'Slow Standard With Wide Modified Topology Finer Mesh.'
+        
+        base = np.ones((80, 30))
+        a1 = np.zeros((30, 10))
+        a2 = np.ones((20, 10))
+        a3 = np.zeros((30, 10))
+        top = np.vstack((a1, a2, a3))
+        topology = np.hstack((base, top))
+        #topology = np.ones((nelx, nely))
+        
+        top = 1e-4 * np.ones((30, nely))
+        mid = np.ones((20, nely))
+        bot = 1e-4 * np.ones((30, nely))
+        densities = np.vstack((top, mid, bot))
+        
+        super().__init__(topology, a, b, xtip, ytip, densities, name)
+        
+        
+class StandardG(Cantilever):
+    
+    def __init__(self):
+        
+        a = 1.5625e-6
+        b = 3.125e-6
+        nelx = 80
+        nely = 80
+        xtip = 1e6 * (a * nelx)
+        ytip = 1e6 * (2 * nely * b - b)
+        name = 'Slow Standard With Modified Topology and finer mesh in X and Y'
+        
+        base = np.ones((80, 60))
+        a1 = np.zeros((20, 20))
+        a2 = np.ones((40, 20))
+        a3 = np.zeros((20, 20))
+        top = np.vstack((a1, a2, a3))
+        topology = np.hstack((base, top))
+        #topology = np.ones((nelx, nely))
+        
+        top = 1e-4 * np.ones((20, nely))
+        mid = np.ones((40, nely))
+        bot = 1e-4 * np.ones((20, nely))
+        densities = np.vstack((top, mid, bot))
+        
+        super().__init__(topology, a, b, xtip, ytip, densities, name)
+        
+        
+class StandardH(Cantilever):
+    
+    def __init__(self):
+        
+        a = 3.125e-6
+        b = 6.25e-6
+        nelx = 80
+        nely = 80
+        xtip = 1e6 * (a * nelx)
+        ytip = 1e6 * (2 * nely * b - b)
+        name = 'Slow Standard With Long Topology'
+        
+        base = np.ones((80, 60))
+        a1 = np.zeros((30, 20))
+        a2 = np.ones((20, 20))
+        a3 = np.zeros((30, 20))
+        top = np.vstack((a1, a2, a3))
+        topology = np.hstack((base, top))
+        #topology = np.ones((nelx, nely))
+        
+        top = 1e-4 * np.ones((30, nely))
+        mid = np.ones((20, nely))
+        bot = 1e-4 * np.ones((30, nely))
+        densities = np.vstack((top, mid, bot))
+        
+        super().__init__(topology, a, b, xtip, ytip, densities, name)

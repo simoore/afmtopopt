@@ -5,13 +5,13 @@ import logging
 import os
 
 
-import materials
-import cantilevers
-import projection
-import density_filter
-import analysers
-import symmetry
-from laminate_analysis import LaminateAnalysis
+from . import materials
+from . import cantilevers
+from . import projection
+from . import density_filter
+from . import analysers
+from . import symmetry
+from .laminate_analysis import LaminateAnalysis
 
 
 logging.basicConfig(level=logging.INFO)
@@ -235,19 +235,20 @@ class TopologyOptimizer(object):
         
         
     def select_cantilever(self):
-        if self.cantilever_key == 'InitialCantileverFixedTip':
-            return cantilevers.InitialCantileverFixedTip()
-        elif self.cantilever_key == 'InitialCantileverRectangular':
-            return cantilevers.InitialCantileverRectangular()
-        elif self.cantilever_key == 'InitialCantileverRectangularStep':
-            return cantilevers.InitialCantileverRectangularStep()
-        elif self.cantilever_key == 'StandardA':
-            return cantilevers.StandardA()
-        elif self.cantilever_key == 'StandardB':
-            return cantilevers.StandardB()
-        elif self.cantilever_key == 'StandardC':
-            return cantilevers.StandardC()
-        elif self.cantilever_key == 'StandardD':
-            return cantilevers.StandardD()
-        else:
-            return cantilevers.InitialCantileverHigherFreq()
+        
+        funcs =  {'InitialCantileverFixedTip': cantilevers.InitialCantileverFixedTip,
+                  'InitialCantileverRectangular': cantilevers.InitialCantileverRectangular,
+                  'InitialCantileverRectangularStep': cantilevers.InitialCantileverRectangularStep, 
+                  'InitialCantileverHigherFreq': cantilevers.InitialCantileverHigherFreq,
+                  'StandardA': cantilevers.StandardA,
+                  'StandardB': cantilevers.StandardB,
+                  'StandardC': cantilevers.StandardC,
+                  'StandardD': cantilevers.StandardD,
+                  'StandardE': cantilevers.StandardE,
+                  'StandardF': cantilevers.StandardF,
+                  'StandardG': cantilevers.StandardG,
+                  'StandardH': cantilevers.StandardH}
+
+        if self.cantilever_key not in funcs:
+            raise ValueError('Non-existent cantilever class.')
+        return funcs[self.cantilever_key]()

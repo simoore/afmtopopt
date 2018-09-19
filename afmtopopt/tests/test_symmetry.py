@@ -1,9 +1,9 @@
 import unittest
 import numpy as np
-import cantilevers
-import materials
-from laminate_fem import LaminateFEM
-import symmetry
+from .. import cantilevers
+from .. import materials
+from ..laminate_fem import LaminateFEM
+from .. import symmetry
 
 
 class TestCantilever(cantilevers.Cantilever):

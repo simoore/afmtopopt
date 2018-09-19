@@ -1,3 +1,5 @@
+# AFM Cantilever Topology Optimizer
+
 ## Todo
 
 * Test connectivity logic.
@@ -8,8 +10,7 @@
 * Check mode shapes of solutions the appear to have torsional solutions. Print 
     mode shapes of the solution. Maybe locally infeasible solutions have a 
     torsional mode.
-
-
+    
 
 ## Numerical and Other Issues
 
@@ -96,4 +97,3 @@ The reexecute the `setup.py` script.
 * Add a delta filter for tip displacement for non-changing tip location.
 * Allow for more than one electrical DOF.
 * Make the tip location an optimization design parameter.
-

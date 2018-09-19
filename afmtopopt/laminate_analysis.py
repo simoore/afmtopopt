@@ -1,9 +1,9 @@
 import numpy as np
 import scipy.sparse as sparse
 
-from laminate_fem import LaminateFEM
-from gaussian import Gaussian
-from connectivity import Connectivity
+from .laminate_fem import LaminateFEM
+from .gaussian import Gaussian
+from .connectivity import Connectivity
 
 
 class LaminateAnalysis(object):
