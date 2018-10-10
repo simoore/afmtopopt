@@ -465,3 +465,31 @@ class StandardH(Cantilever):
         densities = np.vstack((top, mid, bot))
         
         super().__init__(topology, a, b, xtip, ytip, densities, name)
+        
+        
+class StandardI(Cantilever):
+    
+    def __init__(self):
+        
+        a = 10.0e-6
+        b = 6.25e-6
+        nelx = 80
+        nely = 80
+        xtip = 1e6 * (a * nelx)
+        ytip = 1e6 * (2 * nely * b - b)
+        name = 'Slow Standard Ultra Wide and Long'
+        
+        base = np.ones((80, 60))
+        a1 = np.zeros((38, 20))
+        a2 = np.ones((4, 20))
+        a3 = np.zeros((38, 20))
+        top = np.vstack((a1, a2, a3))
+        topology = np.hstack((base, top))
+        #topology = np.ones((nelx, nely))
+        
+        top = 1e-4 * np.ones((30, nely))
+        mid = np.ones((20, nely))
+        bot = 1e-4 * np.ones((30, nely))
+        densities = np.vstack((top, mid, bot))
+        
+        super().__init__(topology, a, b, xtip, ytip, densities, name)
