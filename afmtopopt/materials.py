@@ -188,6 +188,9 @@ class PiezoMumpsMaterial(LaminateMaterial):
         aln_e = 300e9
         aln_nu = 0.36
         aln_perm = perm_free * 10.2
+        # Change d_31 from 2e-12 to 1 to make the optimization better 
+        # numerically conditioned. Remember to scale the piezoelectric matrix
+        # after optimization for analysis.
         #aln_piezo = 2e-12
         aln_piezo = 1
         aln = LaminateLayer(aln_h, aln_rho, aln_e, aln_nu, aln_perm, aln_piezo)

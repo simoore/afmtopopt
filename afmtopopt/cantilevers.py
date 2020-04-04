@@ -66,12 +66,10 @@ class BJNCantilever(Cantilever):
         
 class SteppedCantilever(Cantilever):
     
-    def __init__(self, width, length, tip_width, tip_length):
+    def __init__(self, width, length, tip_width, tip_length, a=5e-6, b=5e-6):
         """(width - tip_width) must be even.
         """
         
-        a = 5e-6
-        b = 5e-6
         xtip = 0.5 * width * 2e6 * a
         ytip = length * 2e6 * b - 2
 
@@ -490,6 +488,34 @@ class StandardI(Cantilever):
         top = 1e-4 * np.ones((30, nely))
         mid = np.ones((20, nely))
         bot = 1e-4 * np.ones((30, nely))
+        densities = np.vstack((top, mid, bot))
+        
+        super().__init__(topology, a, b, xtip, ytip, densities, name)
+        
+        
+class StandardJ(Cantilever):
+    
+    def __init__(self):
+        
+        a = 3.125e-6
+        b = 6.25e-6
+        nelx = 40
+        nely = 48
+        xtip = 1e6 * (a * nelx)
+        ytip = 1e6 * (2 * nely * b - b)
+        name = 'Slow Standard With Modified Topology that\'s 100um longer.'
+        
+        base = np.ones((40, 38))
+        a1 = np.zeros((10, 10))
+        a2 = np.ones((20, 10))
+        a3 = np.zeros((10, 10))
+        top = np.vstack((a1, a2, a3))
+        topology = np.hstack((base, top))
+        #topology = np.ones((nelx, nely))
+        
+        top = 1e-4 * np.ones((10, nely))
+        mid = np.ones((20, nely))
+        bot = 1e-4 * np.ones((10, nely))
         densities = np.vstack((top, mid, bot))
         
         super().__init__(topology, a, b, xtip, ytip, densities, name)

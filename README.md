@@ -41,6 +41,9 @@ For this work, the 64 bit version 3.11.0
 [precompiled binaries](https://www.coin-or.org/download/binary/Ipopt) 
 (Ipopt-3.11.0-Win32-Win64-dll.7z) were used.
 
+[Numpy linked to the Intel MKL](https://www.lfd.uci.edu/~gohlke/pythonlibs/#numpy) 
+is required.
+
 The cyipopt documents a number of dependancies. Here I'll quickly document the 
 installation of two of them:
 
@@ -50,7 +53,7 @@ installation of two of them:
 pip install cython
 ```
 
-* [Visual C++ Build Tools](http://landinghub.visualstudio.com/visual-cpp-build-tools).
+* [Visual C++ Build Tools](https://visualstudio.microsoft.com/visual-cpp-build-tools/).
 
 
 After the installation of the dependancies, download the cyipopt and unzip the 

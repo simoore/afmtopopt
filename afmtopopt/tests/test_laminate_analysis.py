@@ -1,7 +1,7 @@
 import numpy as np
-from materials import PiezoMumpsMaterial
-from cantilevers import InitialCantileverHigherFreq, Cantilever
-from laminate_analysis import LaminateAnalysis
+from ..materials import PiezoMumpsMaterial
+from ..cantilevers import InitialCantileverHigherFreq, Cantilever
+from ..laminate_analysis import LaminateAnalysis
 
 class TestCantileverA(Cantilever):
     

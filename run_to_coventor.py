@@ -13,7 +13,7 @@ import analysers
 def main():
 
     # Load configuration for solution.
-    config_file = '_solutions/std-e12.yaml'
+    config_file = 'solutions/problem1.yaml'
     print(config_file)
     cantilever, material, to_connect, pmu = generate_cantilever(config_file)
     

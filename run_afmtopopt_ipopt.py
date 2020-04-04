@@ -3,30 +3,8 @@ from afmtopopt import TopologyOptimizer, load_parameters
 
 def main():
     
-    batch = ['_solutions/wid-a01.yaml',
-             '_solutions/wid-a02.yaml',
-             '_solutions/wid-a03.yaml',
-             '_solutions/wid-a04.yaml',
-             '_solutions/wid-a05.yaml',
-             '_solutions/wid-a06.yaml',
-             '_solutions/wid-a07.yaml',
-             '_solutions/wid-a08.yaml',
-             '_solutions/wid-a09.yaml',
-             '_solutions/wid-a10.yaml',
-             '_solutions/wid-a11.yaml',
-             '_solutions/wid-a12.yaml',
-             '_solutions/wid-b01.yaml',
-             '_solutions/wid-b02.yaml',
-             '_solutions/wid-b03.yaml',
-             '_solutions/wid-b04.yaml',
-             '_solutions/wid-b05.yaml',
-             '_solutions/wid-b06.yaml',
-             '_solutions/wid-b07.yaml',
-             '_solutions/wid-b08.yaml',
-             '_solutions/wid-b09.yaml',
-             '_solutions/wid-b10.yaml',
-             '_solutions/wid-b11.yaml',
-             '_solutions/wid-b12.yaml']
+    batch = ['solutions/problem1.yaml',
+             'solutions/problem2.yaml']
     opt_list = []
     
     for b in batch:

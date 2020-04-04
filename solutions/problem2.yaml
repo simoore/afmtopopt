@@ -1,0 +1,13 @@
+---
+k0         : 60
+f0         : 50.0e3
+cantilever : StandardJ
+material   : PiezoMumpsMaterial
+rmin       : 2.0
+beta       : 6.0
+max_iter   : 3000
+debug      : True
+to_connect : True
+obj_scale  : 1.0e6
+pmu        : 0.3
+...

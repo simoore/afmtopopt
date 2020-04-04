@@ -1,12 +1,14 @@
 import unittest
 import time
 import numpy as np
-from laminate_fem import LaminateFEM
-from laminate_model import LaminateModel
-from cantilevers import RectangularCantilever, BJNCantilever
-from materials import PiezoMumpsMaterial
-import materials, cantilevers, analysers
-from gaussian import Gaussian
+from ..laminate_fem import LaminateFEM
+from ..laminate_model import LaminateModel
+from ..cantilevers import RectangularCantilever, BJNCantilever
+from ..materials import PiezoMumpsMaterial
+from .. import materials
+from .. import cantilevers
+from .. import analysers 
+from ..gaussian import Gaussian
 #import _plate_materials
 #import _plate_fem
 

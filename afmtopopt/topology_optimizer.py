@@ -248,7 +248,8 @@ class TopologyOptimizer(object):
                   'StandardF': cantilevers.StandardF,
                   'StandardG': cantilevers.StandardG,
                   'StandardH': cantilevers.StandardH,
-                  'StandardI': cantilevers.StandardI}
+                  'StandardI': cantilevers.StandardI,
+                  'StandardJ': cantilevers.StandardJ}
 
         if self.cantilever_key not in funcs:
             raise ValueError('Non-existent cantilever class.')
